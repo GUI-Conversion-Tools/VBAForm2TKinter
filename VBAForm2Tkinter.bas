@@ -1,6 +1,6 @@
 Attribute VB_Name = "VBAForm2Tkinter"
 
-' VBAForm2Tkinter v1.0.0
+' VBAForm2Tkinter v1.1.0
 ' https://github.com/GUI-Conversion-Tools/VBAForm2Tkinter
 ' Copyright (c) 2025 ZeeZeX
 ' This software is released under the MIT License.
@@ -113,6 +113,7 @@ Function VBAForm2TKinter(ByVal root As Object) As String
     Dim dpis() As Variant
     Dim scaleFactorX As Double
     Dim scaleFactorY As Double
+    Dim colorCode As String
     
     r = ""
     
@@ -178,20 +179,32 @@ Function VBAForm2TKinter(ByVal root As Object) As String
             r = r & ctrl.Name & " = " & widgetType & "(" & ctrl.Parent.Name & ")" & vbLf
             r = r & ctrl.Name & ".place(x=" & pixelLeft & ", y=" & pixelTop & ", width=" & pixelWidth & ", height=" & pixelHeight & ")" & vbLf
             
-            If Not ContainsValue(Array("ComboBox", "Frame", "ScrollBar", "MultiPage"), TypeName(ctrl)) Then
+            If Not ContainsValue(Array("ComboBox", "Frame", "Image", "ScrollBar", "MultiPage"), TypeName(ctrl)) Then
                 ' Set ForeColor
                 r = r & ctrl.Name & ".configure(fg=" & q & FormColorToHex(ctrl.ForeColor) & q & ")" & vbLf
             End If
             
             If Not ContainsValue(Array("ComboBox", "MultiPage", "ScrollBar"), TypeName(ctrl)) Then
                 ' Set BackColor
-                r = r & ctrl.Name & ".configure(bg=" & q & FormColorToHex(ctrl.BackColor) & q & ")" & vbLf
-            End If
-            
-            If ContainsValue(Array("CommandButton", "CheckBox", "OptionButton"), TypeName(ctrl)) Then
-                ' Set the colors when the button is pressed
-                r = r & ctrl.Name & ".configure(activeforeground=" & q & FormColorToHex(ctrl.ForeColor) & q & ")" & vbLf
-                r = r & ctrl.Name & ".configure(activebackground=" & q & FormColorToHex(ctrl.BackColor) & q & ")" & vbLf
+                colorCode = FormColorToHex(ctrl.BackColor)
+                If ContainsValue(Array("Label", "TextBox", "CommandButton", "CheckBox", "OptionButton", "Image"), TypeName(ctrl)) Then
+                    ' If the BackStyle is set to Transparent, apply the BackColor of the parent control
+                    If ctrl.BackStyle = fmBackStyleTransparent Then
+                        If TypeName(ctrl.Parent) <> "Page" Then
+                            colorCode = FormColorToHex(ctrl.Parent.BackColor)
+                        Else
+                            ' Because the Page control does not have a BackColor property, set the color to &H8000000F&, which matches the background color of the Page
+                            colorCode = FormColorToHex(&H8000000F)
+                        End If
+                    End If
+                End If
+                r = r & ctrl.Name & ".configure(bg=" & q & colorCode & q & ")" & vbLf
+                
+                If ContainsValue(Array("CommandButton", "CheckBox", "OptionButton"), TypeName(ctrl)) Then
+                    ' Set the colors when the button is pressed
+                    r = r & ctrl.Name & ".configure(activeforeground=" & q & FormColorToHex(ctrl.ForeColor) & q & ")" & vbLf
+                    r = r & ctrl.Name & ".configure(activebackground=" & q & colorCode & q & ")" & vbLf
+                End If
             End If
             
             If ContainsValue(Array("Label", "CommandButton", "CheckBox", "OptionButton"), TypeName(ctrl)) Then
@@ -211,7 +224,17 @@ Function VBAForm2TKinter(ByVal root As Object) As String
             If TypeName(ctrl) = "ComboBox" Then
                 styleName = ctrl.Name & "_style" & ".TCombobox"
                 r = r & "style.configure(" & q & styleName & q & ", foreground=" & q & FormColorToHex(ctrl.ForeColor) & q & ")" & vbLf
-                r = r & "style.configure(" & q & styleName & q & ", fieldbackground=" & q & FormColorToHex(ctrl.BackColor) & q & ")" & vbLf
+                colorCode = FormColorToHex(ctrl.BackColor)
+                
+                If ctrl.BackStyle = fmBackStyleTransparent Then
+                    If TypeName(ctrl.Parent) <> "Page" Then
+                        colorCode = FormColorToHex(ctrl.Parent.BackColor)
+                    Else
+                        colorCode = FormColorToHex(&H8000000F)
+                    End If
+                End If
+                
+                r = r & "style.configure(" & q & styleName & q & ", fieldbackground=" & q & colorCode & q & ")" & vbLf
                 r = r & ctrl.Name & ".configure(style=" & q & styleName & q & ")" & vbLf
                 r = r & ctrl.Name & "_items_value = " & GetListBoxValue(ctrl) & vbLf
                 r = r & ctrl.Name & ".configure(value=" & ctrl.Name & "_items_value" & ")" & vbLf
@@ -273,7 +296,7 @@ Function VBAForm2TKinter(ByVal root As Object) As String
             
             
             ' Font size is rounded because Tkinter does not support floats in font settings
-            If Not ContainsValue(Array("Frame", "ScrollBar", "SpinButton", "MultiPage"), TypeName(ctrl)) Then
+            If Not ContainsValue(Array("Frame", "ScrollBar", "Image", "SpinButton", "MultiPage"), TypeName(ctrl)) Then
                 fontStyle = ""
                 fontOpts = ""
                 
@@ -286,7 +309,7 @@ Function VBAForm2TKinter(ByVal root As Object) As String
             End If
             
             
-            If ContainsValue(Array("Frame", "TextBox", "Label", "ListBox"), TypeName(ctrl)) Then
+            If ContainsValue(Array("Frame", "TextBox", "Label", "ListBox", "Image"), TypeName(ctrl)) Then
                 ' Tkinter's Combobox does not support customizing border colors or relief
                 r = r & GetBorderSetting(ctrl) & vbLf
             End If
@@ -305,7 +328,10 @@ Function VBAForm2TKinter(ByVal root As Object) As String
                 End If
             End If
             
-
+            If TypeName(ctrl) = "Image" Then
+                r = r & "#" & ctrl.Name & "_photo = tk.PhotoImage(file=r" & q & q & ")" & vbLf
+                r = r & "#" & ctrl.Name & ".create_image(0, 0, image=" & ctrl.Name & "_photo" & ", anchor=tk.NW)" & vbLf
+            End If
             
             r = r & vbLf
             
@@ -411,6 +437,8 @@ Private Function GetTkWidgetName(ByVal ctrl As Object) As String
             r = "Checkbutton"
         Case "OptionButton"
             r = "Radiobutton"
+        Case "Image"
+            r = "Canvas"
         Case "ScrollBar"
             r = "Scale"
         Case "ComboBox"
@@ -576,7 +604,7 @@ Private Function ContainsValue(ByVal itemList As Variant, ByVal value As Variant
     Dim item As Variant
     Dim temp As Variant
     result = False
-    If TypeName(itemList) = "Dictionary" Then
+    If LCase(TypeName(itemList)) = "dictionary" Then
         itemList = itemList.items
     End If
     If IsArray(itemList) Then
@@ -824,7 +852,7 @@ Private Function SortFormControlsByDepth(ByVal frmControls As Variant) As Collec
 End Function
 
 
-Private Function Collection2Array(coll As Collection, Optional isStartIdx1 As Boolean = False) As Variant()
+Private Function Collection2Array(ByVal coll As Collection, Optional ByVal isStartIdx1 As Boolean = False) As Variant()
     ' Convert a Collection to an array
     ' If isStartIdx1 is True, create an array starting from index 1 (to match Collection numbering)
     Dim arr() As Variant

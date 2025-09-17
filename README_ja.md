@@ -19,6 +19,7 @@
 - TextBox, ComboBoxのデフォルト値
 - ComboBox, ListBoxに設定したアイテム
 - OptionButton, CheckBoxの選択状態
+- BackStyleに設定した透明表示設定
 
 ## 対応しているコントロールの種類
 | VBA Formのクラス | Tkinterのクラス|
@@ -31,6 +32,7 @@
 | ListBox | tk.Listbox |
 | CheckBox | tk.Checkbutton |
 | OptionButton | tk.Radiobutton |
+| Image | tk.Canvas |
 | ScrollBar | ttk.Scale |
 | ComboBox | ttk.Combobox |
 | MultiPage | ttk.Notebook |
@@ -69,4 +71,4 @@ Tkinterでは例としてLabelにLabelを重ねた場合は設置した順番が
 異なる拡大率のモニターが混在している場合、ウィンドウサイズの計算が正常に行えない可能性があります<br>
 
 ## 日本語コメントのソースコードについて
-ソースコードのコメントは全文英語で記載していますが[ここ](https://gist.github.com/ZeeZeX/69440eed537caa153c5da9ab62789d21)から日本語版を確認可能です、フォークするさいに必要であれば役に立ててください
+ソースコードのコメントは全文英語で記載していますが[ここ](https://gist.github.com/ZeeZeX/1f0bb62d9e476b0df2aed8653ca303d4)から日本語版を確認可能です、フォークするさいに必要であれば役に立ててください

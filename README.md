@@ -18,6 +18,7 @@ This program converts userforms created in Microsoft Excel VBA into Python Tkint
 - Default values of TextBox, ComboBox
 - Items set in ComboBox, ListBox
 - Selection state of OptionButton, CheckBox
+- Transparent background setting specified in BackStyle
 
 ## Supported Controls
 | VBA Form Class | Tkinter Class|
@@ -30,17 +31,18 @@ This program converts userforms created in Microsoft Excel VBA into Python Tkint
 | ListBox | tk.Listbox |
 | CheckBox | tk.Checkbutton |
 | OptionButton | tk.Radiobutton |
+| Image | tk.Canvas |
 | ScrollBar | ttk.Scale |
 | ComboBox | ttk.Combobox |
 | MultiPage | ttk.Notebook |
 
 
 > Note:
-Captions set on Frame are not reflected.
-SpinButton behaves differently in VBA and Tkinter, so appearance may vary depending on placement.
-ScrollBar in VBA has up/down adjustment buttons, but Tkinter’s Scale does not.
-If unsupported controls exist on the form, the conversion will fail.
-Please remove those controls and run the conversion again.
+Captions set on Frame are not reflected.<br>
+SpinButton behaves differently in VBA and Tkinter, so appearance may vary depending on placement.<br>
+ScrollBar in VBA has up/down adjustment buttons, but Tkinter’s Scale does not.<br>
+If unsupported controls exist on the form, the conversion will fail.<br>
+Please remove those controls and run the conversion again.<br>
 
 
 
@@ -62,9 +64,9 @@ Call ConvertForm2Tkinter(UserForm1)
 
 
 ## Control Order (for Controls Without Child Elements)
-In Tkinter, if you place one Label on top of another, the later widget appears in front.
-However, in VBA, you can change front/back order, so the behavior differs.
-The program first sorts controls by hierarchy level; however, it preserves the original creation order within the same hierarchy.
+In Tkinter, if you place one Label on top of another, the later widget appears in front.<br>
+However, in VBA, you can change front/back order, so the behavior differs.<br>
+The program first sorts controls by hierarchy level; however, it preserves the original creation order within the same hierarchy.<br>
 Since VBA’s z-order (front/back) cannot currently be retrieved, some displays may not match VBA.<br>
 
 To adjust:<br>
