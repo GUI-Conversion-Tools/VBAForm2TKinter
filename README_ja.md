@@ -6,19 +6,28 @@
 <img width="681" height="1275" alt="Image" src="https://github.com/user-attachments/assets/9bd8ae88-4f31-411d-8acf-e83fc5c235b6" /><br>
 <img width="704" height="695" alt="Image" src="https://github.com/user-attachments/assets/45678575-a162-4e18-a516-ba522727d1f9" /><br><br>
 
+## 動作要件
+- 対応OS: Windows
+- 必要ソフトウェア: Microsoft Excel
+
+## 動作確認済環境
+= Windows 10/11
+- Excel 2010(32bit)
+- Excel 2016(32bit)
+- Excel 2019(64bit)
 
 ## 反映する項目
 - 変数名(オブジェクト名)
 - コントロールのおおよそのレイアウトとサイズ
 - コントロールの色(文字色、背景色)
-- テキスト表示(Label, CommandButton, CheckBox, OptionButton, MultiPage)
+- テキスト表示(Label, CommandButton, CheckBox, ToggleButton, OptionButton, MultiPage)
 - フォント(フォント種類、サイズ、太字、斜体)
-- 枠線(UserForm, Frame, TextBox, Label, ListBox)
+- 枠線(UserForm, Frame, TextBox, Label, ListBox, Image)
 - マウスカーソル
-- テキスト表示の左寄せ・中央・右寄せ(Label, TextBox(単一行のみ), ComboBox, CheckBox, OptionButton)
+- テキスト表示の左寄せ・中央・右寄せ(Label, TextBox [MultiLine=False], ComboBox, CheckBox, ToggleButton, OptionButton)
 - TextBox, ComboBoxのデフォルト値
 - ComboBox, ListBoxに設定したアイテム
-- OptionButton, CheckBoxの選択状態
+- OptionButton, CheckBox, ToggleButtonの選択状態
 - BackStyleに設定した透明表示設定
 
 ## 対応しているコントロールの種類
@@ -26,18 +35,20 @@
 | ------ | ------ |
 | Label | tk.Label |
 | CommandButton | tk.Button |
-| Frame | tk.Frame |
-| TextBox | tk.Entry (単一行) / tk.Text (複数行) <br> ※MultiLineに代入されたbool値により変換先を分岐 |
+| Frame (Captionなし) | tk.Frame |
+| Frame (Captionあり) | tk.LabelFrame |
+| TextBox (MultiLine=False) | tk.Entry |
+| TextBox (MultiLine=True) | tk.Text |
 | SpinButton | tk.Spinbox |
 | ListBox | tk.Listbox |
 | CheckBox | tk.Checkbutton |
+| ToggleButton | tk.Checkbutton(indicatoron=0) |
 | OptionButton | tk.Radiobutton |
 | Image | tk.Canvas |
 | ScrollBar | ttk.Scale |
 | ComboBox | ttk.Combobox |
 | MultiPage | ttk.Notebook |
 
-※Frameに設定したCaptionは反映されません<br>
 ※SpinButtonは仕様が異なるため、配置方法によっては外観が異なります<br>
 ※ScrollBarについてはVBAのフォームには上下調整用のボタンがありますがTkinterのScaleにはありません<br>
 <br>

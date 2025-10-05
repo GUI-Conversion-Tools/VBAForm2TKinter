@@ -6,18 +6,28 @@ This program converts userforms created in Microsoft Excel VBA into Python Tkint
 <img width="681" height="1275" alt="Image" src="https://github.com/user-attachments/assets/27d11a87-58e0-4f6c-92ca-d1bbf69a8eae" /><br>
 <img width="704" height="695" alt="Image" src="https://github.com/user-attachments/assets/ca514378-3017-443f-a3d8-bbd1ed4ceeb6" /><br>
 
+## System Requirements
+- Supported OS: Windows
+- Required Software: Microsoft Excel
+
+## Verified Operating Environments
+= Windows 10/11
+- Excel 2010(32bit)
+- Excel 2016(32bit)
+- Excel 2019(64bit)
+
 ## Converted Elements
 - Variable names (object names)
 - Approximate layout and size of controls
 - Control colors (foreground, background)
-- Text display (Label, CommandButton, CheckBox, OptionButton, MultiPage)
+- Text display (Label, CommandButton, CheckBox, ToggleButton, OptionButton, MultiPage)
 - Font (typeface, size, bold, italic)
-- Borders (UserForm, Frame, TextBox, Label, ListBox)
+- Borders (UserForm, Frame, TextBox, Label, ListBox, Image)
 - Mouse cursor
-- Text alignment: left, center, right (Label, TextBox [single line only], ComboBox, CheckBox, OptionButton)
+- Text alignment: left, center, right (Label, TextBox [MultiLine=False], ComboBox, CheckBox, ToggleButton, OptionButton)
 - Default values of TextBox, ComboBox
 - Items set in ComboBox, ListBox
-- Selection state of OptionButton, CheckBox
+- Selection state of OptionButton, CheckBox and ToggleButton
 - Transparent background setting specified in BackStyle
 
 ## Supported Controls
@@ -25,11 +35,14 @@ This program converts userforms created in Microsoft Excel VBA into Python Tkint
 | ------ | ------ |
 | Label | tk.Label |
 | CommandButton | tk.Button |
-| Frame | tk.Frame |
-| TextBox | tk.Entry (single line) / tk.Text (multi-line)<br>Conversion depends on the MultiLine property value (True/False) |
+| Frame (without Caption) | tk.Frame |
+| Frame (with any Caption) | tk.LabelFrame |
+| TextBox (MultiLine=False) | tk.Entry |
+| TextBox (MultiLine=True) | tk.Text |
 | SpinButton | tk.Spinbox |
 | ListBox | tk.Listbox |
 | CheckBox | tk.Checkbutton |
+| ToggleButton | tk.Checkbutton(indicatoron=0) |
 | OptionButton | tk.Radiobutton |
 | Image | tk.Canvas |
 | ScrollBar | ttk.Scale |
@@ -38,11 +51,9 @@ This program converts userforms created in Microsoft Excel VBA into Python Tkint
 
 
 > Note:
-Captions set on Frame are not reflected.<br>
 SpinButton behaves differently in VBA and Tkinter, so appearance may vary depending on placement.<br>
 ScrollBar in VBA has up/down adjustment buttons, but Tkinter’s Scale does not.<br>
-If unsupported controls exist on the form, the conversion will fail.<br>
-Please remove those controls and run the conversion again.<br>
+If unsupported controls exist on the form, the conversion will fail. If that case, please remove those controls and run the conversion again.<br>
 
 
 

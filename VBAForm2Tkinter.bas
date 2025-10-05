@@ -1,6 +1,6 @@
 Attribute VB_Name = "VBAForm2Tkinter"
 
-' VBAForm2Tkinter v1.1.0
+' VBAForm2Tkinter v1.2.0
 ' https://github.com/GUI-Conversion-Tools/VBAForm2Tkinter
 ' Copyright (c) 2025 ZeeZeX
 ' This software is released under the MIT License.
@@ -10,7 +10,7 @@ Option Explicit
 
 
 #If VBA7 Then
-    ' 64bit Office/VBA7 later
+    ' 64bit Office / VBA7 or later
     Private Declare PtrSafe Function GetSysColor Lib "user32" (ByVal nIndex As Long) As Long
 #Else
     ' 32bit Office
@@ -72,7 +72,7 @@ Sub ConvertForm2Tkinter(ByVal frm As Object)
     Dim code As String
     Dim filePath As String
     Dim saveDir As String
-    code = VBAForm2TKinter(frm)
+    code = VBAForm2Tkinter(frm)
     If code <> "" Then
         If ThisWorkbook.Path = "" Then
             saveDir = "C:"
@@ -89,7 +89,7 @@ Sub ConvertForm2Tkinter(ByVal frm As Object)
 End Sub
 
 
-Function VBAForm2TKinter(ByVal root As Object) As String
+Function VBAForm2Tkinter(ByVal root As Object) As String
     Dim ctrl As MSForms.Control
     Dim ctrls As Collection
     Dim item As Variant
@@ -179,7 +179,7 @@ Function VBAForm2TKinter(ByVal root As Object) As String
             r = r & ctrl.Name & " = " & widgetType & "(" & ctrl.Parent.Name & ")" & vbLf
             r = r & ctrl.Name & ".place(x=" & pixelLeft & ", y=" & pixelTop & ", width=" & pixelWidth & ", height=" & pixelHeight & ")" & vbLf
             
-            If Not ContainsValue(Array("ComboBox", "Frame", "Image", "ScrollBar", "MultiPage"), TypeName(ctrl)) Then
+            If GetTkWidgetName(ctrl) = "LabelFrame" Or Not ContainsValue(Array("ComboBox", "Frame", "Image", "ScrollBar", "MultiPage"), TypeName(ctrl)) Then
                 ' Set ForeColor
                 r = r & ctrl.Name & ".configure(fg=" & q & FormColorToHex(ctrl.ForeColor) & q & ")" & vbLf
             End If
@@ -187,7 +187,7 @@ Function VBAForm2TKinter(ByVal root As Object) As String
             If Not ContainsValue(Array("ComboBox", "MultiPage", "ScrollBar"), TypeName(ctrl)) Then
                 ' Set BackColor
                 colorCode = FormColorToHex(ctrl.BackColor)
-                If ContainsValue(Array("Label", "TextBox", "CommandButton", "CheckBox", "OptionButton", "Image"), TypeName(ctrl)) Then
+                If ContainsValue(Array("Label", "TextBox", "CommandButton", "CheckBox", "ToggleButton", "OptionButton", "Image"), TypeName(ctrl)) Then
                     ' If the BackStyle is set to Transparent, apply the BackColor of the parent control
                     If ctrl.BackStyle = fmBackStyleTransparent Then
                         If TypeName(ctrl.Parent) <> "Page" Then
@@ -200,24 +200,31 @@ Function VBAForm2TKinter(ByVal root As Object) As String
                 End If
                 r = r & ctrl.Name & ".configure(bg=" & q & colorCode & q & ")" & vbLf
                 
-                If ContainsValue(Array("CommandButton", "CheckBox", "OptionButton"), TypeName(ctrl)) Then
+                If ContainsValue(Array("CommandButton", "CheckBox", "ToggleButton", "OptionButton"), TypeName(ctrl)) Then
                     ' Set the colors when the button is pressed
                     r = r & ctrl.Name & ".configure(activeforeground=" & q & FormColorToHex(ctrl.ForeColor) & q & ")" & vbLf
                     r = r & ctrl.Name & ".configure(activebackground=" & q & colorCode & q & ")" & vbLf
                 End If
+                
+                If TypeName(ctrl) = "ToggleButton" Then
+                    r = r & ctrl.Name & ".configure(indicatoron=0)" & vbLf
+                    r = r & ctrl.Name & ".configure(selectcolor=" & q & colorCode & q & ")" & vbLf
+                End If
+                
             End If
             
-            If ContainsValue(Array("Label", "CommandButton", "CheckBox", "OptionButton"), TypeName(ctrl)) Then
+            If GetTkWidgetName(ctrl) = "LabelFrame" Or ContainsValue(Array("Label", "CommandButton", "CheckBox", "ToggleButton", "OptionButton"), TypeName(ctrl)) Then
                 caption = ctrl.caption
                 caption = Convert2PythonFormatText(caption)
                 r = r & ctrl.Name & ".configure(text=" & q & caption & q & ")" & vbLf
             End If
             
+            
             If TypeName(ctrl) = "TextBox" Then
                 If GetTkWidgetName(ctrl) = "Entry" Then
-                    r = r & ctrl.Name & ".insert(0, " & q & ctrl.text & q & ")" & vbLf
+                    r = r & ctrl.Name & ".insert(0, " & q & Convert2PythonFormatText(ctrl.text) & q & ")" & vbLf
                 ElseIf GetTkWidgetName(ctrl) = "Text" Then
-                    r = r & ctrl.Name & ".insert(" & q & "1.0" & q & ", " & q & ctrl.text & q & ")" & vbLf
+                    r = r & ctrl.Name & ".insert(" & q & "1.0" & q & ", " & q & Convert2PythonFormatText(ctrl.text) & q & ")" & vbLf
                 End If
             End If
             
@@ -238,7 +245,7 @@ Function VBAForm2TKinter(ByVal root As Object) As String
                 r = r & ctrl.Name & ".configure(style=" & q & styleName & q & ")" & vbLf
                 r = r & ctrl.Name & "_items_value = " & GetListBoxValue(ctrl) & vbLf
                 r = r & ctrl.Name & ".configure(value=" & ctrl.Name & "_items_value" & ")" & vbLf
-                r = r & ctrl.Name & ".set(" & q & ctrl.text & q & ")" & vbLf
+                r = r & ctrl.Name & ".set(" & q & Convert2PythonFormatText(ctrl.text) & q & ")" & vbLf
             End If
             
             If TypeName(ctrl) = "ListBox" Then
@@ -296,7 +303,7 @@ Function VBAForm2TKinter(ByVal root As Object) As String
             
             
             ' Font size is rounded because Tkinter does not support floats in font settings
-            If Not ContainsValue(Array("Frame", "ScrollBar", "Image", "SpinButton", "MultiPage"), TypeName(ctrl)) Then
+            If GetTkWidgetName(ctrl) = "LabelFrame" Or Not ContainsValue(Array("Frame", "ScrollBar", "Image", "SpinButton", "MultiPage"), TypeName(ctrl)) Then
                 fontStyle = ""
                 fontOpts = ""
                 
@@ -314,7 +321,7 @@ Function VBAForm2TKinter(ByVal root As Object) As String
                 r = r & GetBorderSetting(ctrl) & vbLf
             End If
             
-            If GetTkWidgetName(ctrl) <> "Text" And ContainsValue(Array("Label", "TextBox", "ComboBox", "CheckBox", "OptionButton"), TypeName(ctrl)) Then
+            If GetTkWidgetName(ctrl) <> "Text" And ContainsValue(Array("Label", "TextBox", "ComboBox", "CheckBox", "ToggleButton", "OptionButton"), TypeName(ctrl)) Then
                 r = r & GetTextAlignSetting(ctrl) & vbLf
             End If
             
@@ -338,14 +345,14 @@ Function VBAForm2TKinter(ByVal root As Object) As String
         Else
             MsgBox GenerateUnsupportedControlMessage(ctrl)
             r = ""
-            VBAForm2TKinter = r
+            VBAForm2Tkinter = r
             Exit Function
         End If
     Next ctrl
     r = r & SetTkRadiobuttonValues(ctrls) & vbLf
     r = r & SetTkCheckbuttonValues(ctrls) & vbLf
     r = r & root.Name & ".mainloop()"
-    VBAForm2TKinter = r
+    VBAForm2Tkinter = r
 End Function
 
 Private Function GetBorderSetting(ByVal ctrl As Object) As String
@@ -422,7 +429,11 @@ Private Function GetTkWidgetName(ByVal ctrl As Object) As String
         Case "CommandButton"
             r = "Button"
         Case "Frame"
-            r = "Frame"
+            If ctrl.caption = "" Then
+                r = "Frame"
+            Else
+                r = "LabelFrame"
+            End If
         Case "TextBox"
             If ctrl.MultiLine Then
                 r = "Text"
@@ -434,6 +445,8 @@ Private Function GetTkWidgetName(ByVal ctrl As Object) As String
         Case "ListBox"
             r = "Listbox"
         Case "CheckBox"
+            r = "Checkbutton"
+        Case "ToggleButton"
             r = "Checkbutton"
         Case "OptionButton"
             r = "Radiobutton"
@@ -521,7 +534,7 @@ Private Function SetTkCheckbuttonValues(ByVal ctrls As Variant) As String
     Dim r As String
     r = ""
     For Each ctrl In ctrls
-        If TypeName(ctrl) = "CheckBox" Then
+        If TypeName(ctrl) = "CheckBox" Or TypeName(ctrl) = "ToggleButton" Then
             varName = ctrl.Name & "_checkbutton_value"
             r = r & varName & "= tk.BooleanVar()" & vbLf
             r = r & ctrl.Name & ".configure(variable=" & varName & ")" & vbLf
@@ -752,7 +765,7 @@ Private Sub SaveUTF8Text_NoBOM(ByVal filePath As String, ByVal textData As Strin
     stream.Charset = "utf-8"
     stream.Open
     stream.WriteText textData
-    stream.Position = 0
+    stream.position = 0
     stream.Type = 1 ' Switch to binary mode
     bytes = stream.Read
     stream.Close
@@ -761,7 +774,7 @@ Private Sub SaveUTF8Text_NoBOM(ByVal filePath As String, ByVal textData As Strin
     ' Remove BOM if present
     If UBound(bytes) >= 2 Then
         If bytes(0) = &HEF And bytes(1) = &HBB And bytes(2) = &HBF Then
-            bytes = MidB(bytes, 4) ' BOM (EF BB BF) を削除
+            bytes = MidB(bytes, 4) ' Remove BOM (EF BB BF)
         End If
     End If
     
