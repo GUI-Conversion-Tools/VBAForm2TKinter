@@ -11,7 +11,7 @@
 - 必要ソフトウェア: Microsoft Excel
 
 ## 動作確認済環境
-= Windows 10/11
+- Windows 10/11
 - Excel 2010(32bit)
 - Excel 2016(32bit)
 - Excel 2019(64bit)
