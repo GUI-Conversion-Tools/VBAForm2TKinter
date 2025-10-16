@@ -1,6 +1,6 @@
 Attribute VB_Name = "VBAForm2Tkinter"
 
-' VBAForm2Tkinter v1.2.0
+' VBAForm2Tkinter v1.2.1
 ' https://github.com/GUI-Conversion-Tools/VBAForm2Tkinter
 ' Copyright (c) 2025 ZeeZeX
 ' This software is released under the MIT License.
@@ -12,55 +12,25 @@ Option Explicit
 #If VBA7 Then
     ' 64bit Office / VBA7 or later
     Private Declare PtrSafe Function GetSysColor Lib "user32" (ByVal nIndex As Long) As Long
-#Else
-    ' 32bit Office
-    Private Declare Function GetSysColor Lib "user32" (ByVal nIndex As Long) As Long
-#End If
-
-#If VBA7 Then
-    Private Declare PtrSafe Function FindWindowW Lib "user32" ( _
-        ByVal lpClassName As LongPtr, _
-        ByVal lpWindowName As LongPtr) As LongPtr
-#Else
-    Private Declare Function FindWindowW Lib "user32" ( _
-        ByVal lpClassName As Long, _
-        ByVal lpWindowName As Long) As Long
-#End If
-
-#If VBA7 Then
-    Private Declare PtrSafe Function GetClientRect Lib "user32" ( _
-        ByVal hwnd As LongPtr, lpRect As RECT) As Long
-    Private Declare PtrSafe Function GetWindowRect Lib "user32" ( _
-        ByVal hwnd As LongPtr, lpRect As RECT) As Long
-    Private Type RECT
-        Left As Long
-        Top As Long
-        Right As Long
-        Bottom As Long
-    End Type
-#Else
-    Private Declare Function GetClientRect Lib "user32" ( _
-        ByVal hwnd As Long, lpRect As RECT) As Long
-    Private Declare Function GetWindowRect Lib "user32" ( _
-        ByVal hwnd As Long, lpRect As RECT) As Long
-    Private Type RECT
-        Left As Long
-        Top As Long
-        Right As Long
-        Bottom As Long
-    End Type
-#End If
-
-
-#If VBA7 Then
+    Private Declare PtrSafe Function FindWindowW Lib "user32" (ByVal lpClassName As LongPtr, ByVal lpWindowName As LongPtr) As LongPtr
+    Private Declare PtrSafe Function GetClientRect Lib "user32" (ByVal hwnd As LongPtr, lpRect As RECT) As Long
+    Private Declare PtrSafe Function GetWindowRect Lib "user32" (ByVal hwnd As LongPtr, lpRect As RECT) As Long
+    Private Type RECT: Left As Long: Top As Long: Right As Long: Bottom As Long: End Type
     Private Declare PtrSafe Function GetDC Lib "user32" (ByVal hwnd As LongPtr) As LongPtr
     Private Declare PtrSafe Function ReleaseDC Lib "user32" (ByVal hwnd As LongPtr, ByVal hdc As LongPtr) As Long
     Private Declare PtrSafe Function GetDeviceCaps Lib "gdi32" (ByVal hdc As LongPtr, ByVal nIndex As Long) As Long
 #Else
+    ' 32bit Office
+    Private Declare Function GetSysColor Lib "user32" (ByVal nIndex As Long) As Long
+    Private Declare Function FindWindowW Lib "user32" (ByVal lpClassName As Long, ByVal lpWindowName As Long) As Long
+    Private Declare Function GetClientRect Lib "user32" (ByVal hwnd As Long, lpRect As RECT) As Long
+    Private Declare Function GetWindowRect Lib "user32" (ByVal hwnd As Long, lpRect As RECT) As Long
+    Private Type RECT: Left As Long: Top As Long: Right As Long: Bottom As Long: End Type
     Private Declare Function GetDC Lib "user32" (ByVal hwnd As Long) As Long
     Private Declare Function ReleaseDC Lib "user32" (ByVal hwnd As Long, ByVal hdc As Long) As Long
     Private Declare Function GetDeviceCaps Lib "gdi32" (ByVal hdc As Long, ByVal nIndex As Long) As Long
 #End If
+
 
 
 Sub RunConversion2Tk()
@@ -148,7 +118,11 @@ Function VBAForm2Tkinter(ByVal root As Object) As String
     r = r & GetBorderSetting(root) & vbLf
     
     cursorType = GetControlCursorType(root)
-    r = r & root.Name & ".configure(cursor=" & q & cursorType & q & ")" & vbLf
+    If cursorType <> "" Then
+        r = r & root.Name & ".configure(cursor=" & q & cursorType & q & ")" & vbLf
+    Else
+        r = r & root.Name & ".configure(cursor=" & "None" & ")" & vbLf
+    End If
     
     r = r & vbLf
     r = r & "style = ttk.Style()" & vbLf
@@ -622,7 +596,7 @@ Private Function ContainsValue(ByVal itemList As Variant, ByVal value As Variant
     End If
     If IsArray(itemList) Then
         On Error GoTo Finally
-        ' Empty array -> False
+        ' Empty (not initialized) array -> False
         temp = LBound(itemList)
         On Error GoTo 0
     End If
@@ -887,6 +861,8 @@ Private Function Collection2Array(ByVal coll As Collection, Optional ByVal isSta
             End If
             idx = idx + 1
         Next
+    Else
+        arr = Array()
     End If
     Collection2Array = arr
 End Function
